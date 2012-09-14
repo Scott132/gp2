@@ -65,8 +65,12 @@ bool CGameApplication::initGraphics()
 	return true;
 }
 
+
 bool CGameApplication::initWindow()
 {
-	return true;
+	m_pWindow=new CWin32Window();
+	if(!m_pWindow->init(TEXT("Lab 1 - Create Device"),800,640,false))
+		return false;
 
+	return true;
 }
