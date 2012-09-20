@@ -108,7 +108,7 @@ bool CGameApplication::initGraphics()
 	}
 	pBackBuffer->Release();
 	
-
+	m_pD3D10Device->OMSetRenderTargets(1, &m_pRenderTargetView, NULL);
 
 	return true;
 }
