@@ -52,7 +52,10 @@ bool CGameApplication::run()
 
 void CGameApplication::render()
 {
+	float ClearColor[4] = {0.0f, 0.125f, 0.3f, 1.0f};
+	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView, ClearColor);
 
+	m_pSwapChain->Present(0, 0);
 }
 
 void CGameApplication::update()
@@ -109,6 +112,16 @@ bool CGameApplication::initGraphics()
 	pBackBuffer->Release();
 	
 	m_pD3D10Device->OMSetRenderTargets(1, &m_pRenderTargetView, NULL);
+
+	D3D10_VIEWPORT vp;
+	vp.Width = width;
+	vp.Height = height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	m_pD3D10Device->RSSetViewports( 1, &vp );
+
 
 	return true;
 }
