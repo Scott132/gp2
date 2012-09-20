@@ -22,6 +22,9 @@ CGameApplication::~CGameApplication(void)
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release();
 
+	if(m_pVertexLayout)
+		m_pVertexLayout->Release();
+
 	if(m_pEffect)
 		m_pEffect->Release();
 
@@ -53,20 +56,6 @@ bool CGameApplication::init()
 
 bool CGameApplication::initGame()
 {
-
-	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
-#if defined(DEBUG)||defined(_DEBUG)
-	dwShaderFlags |= D3D10_SHADER_DEBUG;
-#endif
-
-	if(FAILED(D3DX10CreateEffectFromFile(TEXT("ScreenSpace.fx"), NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pD3D10Device, NULL, NULL, &m_pEffect, NULL, NULL)))
-	{
-		MessageBox(NULL, TEXT("The FX file cannot be located. Please run this executable from the directory that contains the FX file."), TEXT("Error"), MB_OK);
-		return false;
-	}
-
-	m_pTechnique = m_pEffect->GetTechniqueByName("Render");
-
 	D3D10_BUFFER_DESC bd;
 	bd.Usage = D3D10_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(Vertex)*3;
@@ -78,11 +67,25 @@ bool CGameApplication::initGame()
 	{
 		D3DXVECTOR3(0.0f, 0.5f, 0.5f),
 		D3DXVECTOR3(0.5f, -0.5f, 0.5f),
-		D3DXVECTOR3(-0.0f, -0.5f, 0.5f),
+		D3DXVECTOR3(-0.5f, -0.5f, 0.5f),
 	};
 
 	D3D10_SUBRESOURCE_DATA InitData;
 	InitData.pSysMem = vertices;
+
+	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if defined(DEBUG)||defined(_DEBUG)
+	dwShaderFlags |= D3D10_SHADER_DEBUG;
+#endif
+
+
+	if(FAILED(D3DX10CreateEffectFromFile(TEXT("ScreenSpace.fx"), NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pD3D10Device, NULL, NULL, &m_pEffect, NULL, NULL)))
+	{
+		MessageBox(NULL, TEXT("The FX file cannot be located. Please run this executable from the directory that contains the FX file."), TEXT("Error"), MB_OK);
+		return false;
+	}
+
+	m_pTechnique = m_pEffect->GetTechniqueByName("Render");
 
 	if(FAILED(m_pD3D10Device->CreateBuffer( &bd, &InitData, &m_pVertexBuffer)))
 		return false;
@@ -105,7 +108,10 @@ bool CGameApplication::initGame()
 	m_pD3D10Device->IASetInputLayout(m_pVertexLayout);
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
+
 	m_pD3D10Device->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+
+	m_pD3D10Device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	return true;
 }
@@ -128,6 +134,14 @@ void CGameApplication::render()
 	float ClearColor[4] = {0.0f, 0.125f, 0.3f, 1.0f};
 	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView, ClearColor);
 
+	D3D10_TECHNIQUE_DESC techDesc;
+	m_pTechnique->GetDesc(&techDesc);
+	for(UINT p=0; p < techDesc.Passes; ++p)
+	{
+		m_pTechnique->GetPassByIndex(p)->Apply(0);
+		m_pD3D10Device->Draw(3, 0);
+	}
+
 	m_pSwapChain->Present(0, 0);
 }
 
@@ -145,11 +159,13 @@ bool CGameApplication::initGraphics()
 	UINT height=windowRect.bottom-windowRect.top;
 
 	UINT createDeviceFlags=0;
+
 #ifdef DEBUG
 	createDeviceFlags|=D3D10_CREATE_DEVICE_DEBUG;
 #endif
 
 	DXGI_SWAP_CHAIN_DESC sd;
+
 	ZeroMemory(&sd, sizeof(sd));
 
 	if(m_pWindow->isFullScreen())
@@ -203,7 +219,7 @@ bool CGameApplication::initGraphics()
 bool CGameApplication::initWindow()
 {
 	m_pWindow=new CWin32Window();
-	if(!m_pWindow->init(TEXT("Lab 1 - Create Device"),800,640,false))
+	if(!m_pWindow->init(TEXT("Lab 1 - Drawing Triangle"),800,640,false))
 		return false;
 
 	return true;
