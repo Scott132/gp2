@@ -33,8 +33,16 @@ CGameApplication::~CGameApplication(void)
 
 	if(m_pRenderTargetView)
 		m_pRenderTargetView->Release();
+
+	if(m_pDepthStencilTexture)
+		m_pDepthStencilTexture->Release();
+
+	if(m_pDepthStencilView)
+		m_pDepthStencilView->Release();
+
 	if(m_pSwapChain)
 		m_pSwapChain->Release();
+
 	if(m_pD3D10Device)
 		m_pD3D10Device->Release();
 
@@ -146,6 +154,11 @@ void CGameApplication::render()
 	}
 
 	m_pSwapChain->Present(0, 0);
+
+
+	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView, ClearColor);
+	m_pD3D10Device->ClearDepthStencilView(m_pDepthStencilView, D3D10_CLEAR_DEPTH,1.0f,0);
+
 }
 
 void CGameApplication::update()
@@ -216,8 +229,19 @@ bool CGameApplication::initGraphics()
 	descDepth.BindFlags = D3D10_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
+
+	if(FAILED(m_pD3D10Device->CreateTexture2D(&descDepth, NULL, &m_pDepthStencilTecture)))
+		return false;
+
+	D3D10_DEPTH_STENCIL_VIEW_DESC descDSV;
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+
+	if(FAILED(m_pD3D10Device->CreateDepthStencilView(m_pDepthStencilTexture, &descDSV, &m_pDepthStencilView)))
+		return false;
 	
-	m_pD3D10Device->OMSetRenderTargets(1, &m_pRenderTargetView, NULL);
+	m_pD3D10Device->OMSetRenderTargets(1, &m_pRenderTargetView, m_pDepthStencilView);
 
 	D3D10_VIEWPORT vp;
 	vp.Width = width;
