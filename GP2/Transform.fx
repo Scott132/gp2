@@ -2,28 +2,28 @@ float4x4 matWorld:WORLD;
 float4x4 matView:VIEW;
 float4x4 matProjection:PROJECTION;
 
-struct VS_INPUT
+struct VS_INPUT //the input structure for the vertex shader 
 {
 	float4 pos:POSITION;
 };
 
-struct PS_INPUT
+struct PS_INPUT //the input structure for the pixel shader
 {
 	float4 pos:SV_POSITION;
 };
 
 PS_INPUT VS(VS_INPUT input)
 {
-	PS_INPUT output = (PS_INPUT)0;
+	PS_INPUT output=(PS_INPUT)0;
 	
-	float4x4 matViewProjection=mul(matView, matProjection);
-	float4x4 matWorldViewProjection=mul(matWorld, matViewProjection);
+	float4x4 matViewProjection=mul(matView,matProjection);
+	float4x4 matWorldViewProjection=mul(matWorld,matViewProjection);
 	
-	output.pos = mul(input.pos, matWorldViewProjection);
+	output.pos=mul(input.pos,matWorldViewProjection);
 	return output;
 }
 
-float PS(PS_INPUT input):SV_TARGET
+float4 PS(PS_INPUT input):SV_TARGET
 {
 	return float4(1.0f,1.0f,1.0f,1.0f);
 }

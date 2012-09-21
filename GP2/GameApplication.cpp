@@ -12,6 +12,9 @@ CGameApplication::CGameApplication(void)
 	m_pRenderTargetView=NULL;
 	m_pSwapChain=NULL;
 	m_pVertexBuffer=NULL;
+
+	m_pDepthStencilView=NULL;
+	m_pDepthStencilTexture=NULL;
 }
 
 CGameApplication::~CGameApplication(void)
@@ -79,7 +82,7 @@ bool CGameApplication::initGame()
 #endif
 
 
-	if(FAILED(D3DX10CreateEffectFromFile(TEXT("ScreenSpace.fx"), NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pD3D10Device, NULL, NULL, &m_pEffect, NULL, NULL)))
+	if(FAILED(D3DX10CreateEffectFromFile(TEXT("Transform.fx"), NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pD3D10Device, NULL, NULL, &m_pEffect, NULL, NULL)))
 	{
 		MessageBox(NULL, TEXT("The FX file cannot be located. Please run this executable from the directory that contains the FX file."), TEXT("Error"), MB_OK);
 		return false;
@@ -199,6 +202,20 @@ bool CGameApplication::initGraphics()
 		return false;
 	}
 	pBackBuffer->Release();
+
+
+	D3D10_TEXTURE2D_DESC descDepth;
+	descDepth.Width = width;
+	descDepth.Height = height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D10_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D10_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
 	
 	m_pD3D10Device->OMSetRenderTargets(1, &m_pRenderTargetView, NULL);
 
