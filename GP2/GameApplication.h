@@ -37,8 +37,8 @@ private:
 	ID3D10Effect* m_pEffect;
 	ID3D10EffectTechnique* m_pTechnique;
 
-	//ID3D10EffectShaderResourceVariable * m_pDiffuseTextureVariable;
-	//ID3D10ShaderResourceView * m_pTextureShaderResource;
+	ID3D10EffectShaderResourceVariable * m_pDiffuseTextureVariable;
+	ID3D10ShaderResourceView * m_pTextureShaderResource;
 
 	ID3D10EffectMatrixVariable * m_pWorldMatrixVariable;
 

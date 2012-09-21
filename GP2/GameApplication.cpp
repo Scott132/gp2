@@ -142,13 +142,12 @@ bool CGameApplication::initGame()
 
 	m_pProjectionMatrixVariable->SetMatrix((float*)m_matProjection);
 
-	return true;
-
 	m_vecPosition = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	m_vecScale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 	m_vecRotation = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	m_pWorldMatrixVariable = m_pEffect->GetVariableByName("matWorld")->AsMatrix();
-
+	
+	return true;
 }
 
 bool CGameApplication::run()
@@ -170,6 +169,9 @@ void CGameApplication::render()
 	m_pD3D10Device->ClearRenderTargetView(m_pRenderTargetView, ClearColor);
 
 	m_pViewMatrixVariable->SetMatrix((float*)m_matView);
+
+	m_pWorldMatrixVariable->SetMatrix((float*)m_matWorld);
+
 	D3D10_TECHNIQUE_DESC techDesc;
 	m_pTechnique->GetDesc(&techDesc);
 	for(UINT p=0; p < techDesc.Passes; ++p)
@@ -188,6 +190,14 @@ void CGameApplication::render()
 
 void CGameApplication::update()
 {
+	D3DXMatrixScaling(&m_matScale, m_vecScale.x, m_vecScale.y, m_vecScale.z);
+
+	D3DXMatrixRotationYawPitchRoll(&m_matRotation, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
+
+	D3DXMatrixTranslation(&m_matTranslation, m_vecPosition.x, m_vecRotation.y, m_vecPosition.z);
+
+	D3DXMatrixMultiply(&m_matWorld, &m_matScale, &m_matRotation);
+	D3DXMatrixMultiply(&m_matWorld, &m_matWorld, &m_matTranslation);
 
 }
 
@@ -255,7 +265,7 @@ bool CGameApplication::initGraphics()
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
 
-	if(FAILED(m_pD3D10Device->CreateTexture2D(&descDepth, NULL, &m_pDepthStencilTecture)))
+	if(FAILED(m_pD3D10Device->CreateTexture2D(&descDepth, NULL, &m_pDepthStencilTexture)))
 		return false;
 
 	D3D10_DEPTH_STENCIL_VIEW_DESC descDSV;
