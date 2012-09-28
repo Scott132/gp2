@@ -12,7 +12,7 @@ CGameApplication::CGameApplication(void)
 	m_pRenderTargetView=NULL;
 	m_pSwapChain=NULL;
 	m_pVertexBuffer=NULL;
-
+	m_pIndexBuffer=NULL;
 	m_pDepthStencilView=NULL;
 	m_pDepthStencilTexture=NULL;
 }
@@ -46,6 +46,9 @@ CGameApplication::~CGameApplication(void)
 	if(m_pD3D10Device)
 		m_pD3D10Device->Release();
 
+	if(m_pIndexBuffer)
+		m_pIndexBuffer->Release();
+
 	if(m_pWindow)
 	{
 		delete m_pWindow;
@@ -74,6 +77,15 @@ bool CGameApplication::initGame()
 	bd.CPUAccessFlags = 0;
 	bd.MiscFlags = 0;
 
+	int indices[]={0,1,2};
+
+	D3D10_BUFFER_DESC indexBufferDesc;
+	indexBufferDesc.Usage = D3D10_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(indices)*3;
+	indexBufferDesc.BindFlags = D3D10_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+
 	Vertex vertices[] =
 	{
 		D3DXVECTOR3(0.0f, 0.5f, 0.5f),
@@ -83,6 +95,10 @@ bool CGameApplication::initGame()
 
 	D3D10_SUBRESOURCE_DATA InitData;
 	InitData.pSysMem = vertices;
+
+	D3D10_SUBRESOURCE_DATA IndexBufferInitialData;
+	IndexBufferInitialData.pSysMem = indices;
+
 
 	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
 #if defined(DEBUG)||defined(_DEBUG)
@@ -98,13 +114,18 @@ bool CGameApplication::initGame()
 
 	m_pTechnique = m_pEffect->GetTechniqueByName("Render");
 
+
 	if(FAILED(m_pD3D10Device->CreateBuffer( &bd, &InitData, &m_pVertexBuffer)))
+		return false;
+
+	if(FAILED(m_pD3D10Device->CreateBuffer( &indexBufferDesc, &IndexBufferInitialData, &m_pIndexBuffer)))
 		return false;
 
 	D3D10_INPUT_ELEMENT_DESC layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0},
 	};
+
 
 	UINT numElements = sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
 	D3D10_PASS_DESC PassDesc;
@@ -121,6 +142,8 @@ bool CGameApplication::initGame()
 	UINT offset = 0;
 
 	m_pD3D10Device->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+
+	m_pD3D10Device->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT,0);
 
 	m_pD3D10Device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -177,7 +200,7 @@ void CGameApplication::render()
 	for(UINT p=0; p < techDesc.Passes; ++p)
 	{
 		m_pTechnique->GetPassByIndex(p)->Apply(0);
-		m_pD3D10Device->Draw(3, 0);
+		m_pD3D10Device->DrawIndexed(3,0,0);
 	}
 
 	m_pSwapChain->Present(0, 0);
