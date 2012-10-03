@@ -221,7 +221,7 @@ void CGameApplication::update()
 {
 	D3DXMatrixScaling(&m_matScale, m_vecScale.x, m_vecScale.y, m_vecScale.z);
 
-	D3DXMatrixRotationYawPitchRoll(&m_matRotation, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
+	D3DXMatrixRotationYawPitchRoll(&m_matRotation, m_vecRotation.y+2, m_vecRotation.x+2, m_vecRotation.z);
 
 	D3DXMatrixTranslation(&m_matTranslation, m_vecPosition.x, m_vecRotation.y, m_vecPosition.z);
 
