@@ -12,33 +12,27 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					HINSTANCE hPrevInstance, 
 					LPSTR lpCmdLine,
 					int nCmdShow)
-
+#else
+//we are on some other platform
+int main(int argc, char **argv)
+#endif
 {
-	CGameApplication * pApp=new CGameApplication();
-
-	if(!pApp->init())
+	CGameApplication *pApp=new CGameApplication();
+	if (!pApp->init())
 	{
-		if(pApp)
+		if (pApp)
 		{
 			delete pApp;
 			pApp=NULL;
 			return 1;
 		}
 	}
-
 	pApp->run();
-
-	if(pApp)
+	if (pApp)
 	{
 		delete pApp;
 		pApp=NULL;
 	}
 	return 0;
-
 }
-#else
-//we are on some other platform
-int main(int argc, char **argv)
-#endif
-
 
